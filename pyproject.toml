@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "schema-abtf-wrapper"
+version = "0.0.1"
+description = ""
+authors = ["Reue Munz <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+pydantic = "^2.8.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

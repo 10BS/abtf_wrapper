@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class Item(BaseModel):
-    defindex: int
+    def_index: int = Field(alias="defindex")
     quality: int
     craftable: bool
     tradable: bool
@@ -11,22 +11,17 @@ class Item(BaseModel):
     australium: bool
     effect: Optional[int] = None
     festive: bool
-    paintkit: Optional[int] = None
+    paint_kit: Optional[int] = Field(default=None, alias="paintkit")
     wear: Optional[int] = None
     quality2: Optional[int] = None
-    craftnumber: Optional[int] = None
-    crateseries: Optional[int] = None
+    craft_number: Optional[int] = Field(default=None, alias="craftnumber")
+    crate_series: Optional[int] = Field(default=None, alias="crateseries")
     target: Optional[int] = None
     output: Optional[int] = None
-    outputQuality: Optional[int] = None
+    output_quality: Optional[int] = Field(default=None, alias="outputQuality")
     paint: Optional[int] = None
-
-
-class ItemObject(BaseModel):
-    success: bool
-    item: dict[Item]
 
 
 class ItemObjects(BaseModel):
     success: bool
-    items: list[Item]
+    values: dict[Item] | list[Item] = Field(alias="item" or "items")

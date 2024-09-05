@@ -14,7 +14,7 @@ def make_request(
         headers: dict,
         url: str,
         params: Optional[dict] = None,
-        data: Optional[dict] = None,
+        data: Optional[dict | list] = None,
         mode: Literal["raw", "txt", "json"] = "raw",
 ) -> Response | str | JSON:
     response: Response = requests.request(

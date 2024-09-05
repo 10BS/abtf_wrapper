@@ -147,7 +147,7 @@ class Items(BaseModel):
     item_name: str
     proper_name: bool
     item_slot: str
-    model_player: str
+    player_model: Optional[str] = Field(default=None, alias="model_player")
     item_quality: int
     image_inventory: str
     min_item_level: int = Field(ge=1, le=100, alias="min_ilevel")
@@ -178,7 +178,5 @@ class PaintKits(BaseModel):
     paints: dict[int, str]
 
 
-# FOR TG BOT. DELETE LATER #
-class ItemName(BaseModel):
-    success: bool
-    name: str
+class SchemaProperty(BaseModel):
+    values: dict[str | int, str | int] | list[str] = Field(alias="")

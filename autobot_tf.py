@@ -1,16 +1,12 @@
 import json
+from typing import Literal
 
 from pydantic import Field
 
 import request
 from models.item_name_sku import ItemName
 from models.item_object import ItemObjects
-from models.schema import (
-    ItemOrigins,
-    ItemAttributes,
-    ItemSets,
-    SchemaProperty
-)
+from models.schema import ItemOrigins, ItemAttributes, ItemSets, SchemaProperty
 
 
 class AutobotTF:
@@ -24,7 +20,7 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url="schema/download",
             headers=headers,
-            mode="json"
+            output="json",
         )
         with open("schema.json", "w", encoding="utf-8") as schema:
             json.dump(response, schema, indent=4)
@@ -39,10 +35,9 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url="raw/schema/originNames",
             headers=headers,
-            mode="json"
+            output="json",
         )
-        data = ItemOrigins(**response)
-        return data
+        return ItemOrigins(**response)
 
     @staticmethod
     def get_attributes() -> ItemAttributes:
@@ -54,7 +49,7 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url="raw/schema/attributes",
             headers=headers,
-            mode="json"
+            output="json",
         )
         data = ItemAttributes(**response)
         return data
@@ -69,10 +64,9 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url="raw/schema/item_sets",
             headers=headers,
-            mode="json"
+            output="json",
         )
-        data = ItemSets(**response)
-        return data
+        return ItemSets(**response)
 
     @staticmethod
     def get_schema_property() -> SchemaProperty:
@@ -84,10 +78,9 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url="properties/wears",
             headers=headers,
-            mode="json"
+            output="json",
         )
-        data = SchemaProperty(values=response)
-        return data
+        return SchemaProperty(values=response)
 
     @staticmethod
     def name_from_sku(sku: str = Field(min_length=1)) -> str:
@@ -99,24 +92,33 @@ class AutobotTF:
             base_url="https://schema.autobot.tf/",
             url=f"getName/fromSku/{sku.replace(";", "%3B")}",
             headers=headers,
-            mode="json"
+            output="json",
         )
-        item_name = ItemName(**response)
-        return item_name.name
+        return ItemName(**response).name
 
     @staticmethod
-    def get_item_object(items: list[str]) -> ItemObjects:
+    def get_item_object(
+        items: str | list[str],
+        bulk: bool,
+        get_from: Literal["name", "sku", "econ_item"],
+    ) -> ItemObjects:
         headers = {
             "accept": "*/*",
-            "Content-Type": "application/json",
         }
+        if bulk:
+            headers["Content-Type"] = "application/json"
+        method_mapping = {
+            "name": "fromNameBulk" if bulk else f"fromName/{items}",
+            "sku": "fromSkuBulk" if bulk else f"fromSku/{items}",
+            "econ_item": "fromEconItem" if bulk else f"fromEconItem/{items}"
+        }
+        method = method_mapping.get(get_from)
         response = request.make_request(
             method="POST",
             base_url="https://schema.autobot.tf/",
-            url="getItemObject/fromNameBulk",
+            url=f"getItemObject/{method}",
             headers=headers,
-            data=items,
-            mode="json"
+            json=items if bulk else None,
+            output="json",
         )
-        data = ItemObjects(**response)
-        return data
+        return ItemObjects(**response)

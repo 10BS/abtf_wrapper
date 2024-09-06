@@ -41,7 +41,7 @@ class AppData(BaseModel):
 class EconItems(BaseModel):
     app_id: int = Field(alias="appid")
     context_id: str = Field(alias="contextid")
-    assetid: str = Field(alias="assetid")
+    asset_id: str = Field(alias="assetid")
     id: str
     class_id: str = Field(alias="classid")
     instance_id: str = Field(alias="instanceid")

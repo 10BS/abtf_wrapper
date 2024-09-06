@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field, AliasChoices
 
 
 class Item(BaseModel):
@@ -24,4 +25,6 @@ class Item(BaseModel):
 
 class ItemObjects(BaseModel):
     success: bool
-    values: dict[Item] | list[Item] = Field(alias="item" or "items")
+    values: Item | list[Item] = Field(
+        validation_alias=AliasChoices("item", "itemObjects")
+    )

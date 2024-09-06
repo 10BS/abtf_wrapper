@@ -40,7 +40,7 @@ class ItemAttribute(BaseModel):
         "neutral",
         "unusual",
         "strange",
-        "value_is_from_lookup_table"
+        "value_is_from_lookup_table",
     ]
     hidden: bool
     stored_as_integer: bool
@@ -159,17 +159,19 @@ class Items(BaseModel):
     craft_material_type: str
     capabilities: Capabilities
     styles: list[Style]
-    used_by_classes: list[Literal[
-        "Scout",
-        "Soldier",
-        "Pyro",
-        "Demoman",
-        "Heavy",
-        "Engineer",
-        "Medic",
-        "Sniper",
-        "Spy"
-    ]]
+    used_by_classes: list[
+        Literal[
+            "Scout",
+            "Soldier",
+            "Pyro",
+            "Demoman",
+            "Heavy",
+            "Engineer",
+            "Medic",
+            "Sniper",
+            "Spy",
+        ]
+    ]
     attributes: list[Attribute]
 
 
@@ -179,4 +181,4 @@ class PaintKits(BaseModel):
 
 
 class SchemaProperty(BaseModel):
-    values: dict[str | int, str | int] | list[str] = Field(alias="")
+    values: dict[str | int, str | int] | list[str]

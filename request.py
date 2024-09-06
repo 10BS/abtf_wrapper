@@ -7,29 +7,31 @@ from requests import Response
 JSON: TypeAlias = Any
 
 
-@validate_call
+@validate_call()
 def make_request(
-        method: Literal["GET", "POST"],
-        base_url: str,
-        headers: dict,
-        url: str,
-        params: Optional[dict] = None,
-        data: Optional[dict | list] = None,
-        mode: Literal["raw", "txt", "json"] = "raw",
+    method: Literal["GET", "POST"],
+    base_url: str,
+    headers: dict,
+    url: str,
+    params: Optional[dict] = None,
+    data: Optional[dict | list] = None,
+    json: Optional[dict | list] = None,
+    output: Literal["raw", "txt", "json"] = "raw",
 ) -> Response | str | JSON:
     response: Response = requests.request(
         method=method,
         url=base_url + url,
         params=params,
         data=data,
+        json=json,
         headers=headers,
     )
     if response.ok:
-        if mode == "raw":
+        if output == "raw":
             return response
-        elif mode == "txt":
+        elif output == "txt":
             return response.text
-        elif mode == "json":
+        elif output == "json":
             return response.json()
     else:
         print(response.raise_for_status())

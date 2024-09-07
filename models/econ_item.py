@@ -74,4 +74,4 @@ class EconItem(BaseModel):
 
 
 class EconItems(BaseModel):
-    values: list[EconItem]
+    econ_items: list[EconItem]

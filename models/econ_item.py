@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, AliasChoices
+from pydantic import BaseModel, Field
 
 
 class Description(BaseModel):
@@ -30,44 +30,48 @@ class FilterData(BaseModel):
 
 
 class AppData(BaseModel):
-    quantity: int
+    quantity: Optional[int] = None
     def_index: int
     quality: int
     limited: Optional[str] = None
     slot: Optional[int] = None
-    filter_data: FilterData
+    filter_data: Optional[FilterData] = None
 
 
-class EconItems(BaseModel):
-    app_id: int = Field(alias="appid")
-    context_id: str = Field(alias="contextid")
-    asset_id: str = Field(alias="assetid")
-    id: str
-    class_id: str = Field(alias="classid")
-    instance_id: str = Field(alias="instanceid")
-    amount: str
-    pos: int
-    missing: bool
-    currency: int
+class EconItem(BaseModel):
+    app_id: int = Field(default=None, alias="appid")
+    context_id: Optional[int] = Field(default=None, alias="contextid")
+    asset_id: Optional[int] = Field(default=None, alias="assetid")
+    id: Optional[int] = None
+    class_id: Optional[int] = Field(default=None, alias="classid")
+    instance_id: int = Field(alias="instanceid")
+    amount: Optional[str] = None
+    pos: Optional[int] = None
+    missing: Optional[bool] = None
+    currency: Optional[int] = None
     background_color: str
     icon_url: str
     icon_url_large: str
     icon_drag_url: Optional[str] = None
     descriptions: list[Description]
     tradable: int
-    actions: list[Action]
-    fraud_warnings: list[str] = Field(alias="fraudwarnings")
+    actions: Optional[list[Action]] = None
+    fraud_warnings: Optional[list[str]] = Field(default=None, alias="fraudwarnings")
     name: str
     name_color: str
     type: str
     market_name: str
     market_hash_name: str
-    market_actions: list[Action]
+    market_actions: Optional[list[Action]] = None
     commodity: int
     market_tradable_restriction: int
     market_marketable_restriction: int
     marketable: int
     tags: list[Tag]
     app_data: AppData
-    owner_descriptions: list[str]
-    owner_actions: list[str]
+    owner_descriptions: Optional[list[str]] = None
+    owner_actions: Optional[list[str]] = None
+
+
+class EconItems(BaseModel):
+    values: list[EconItem]

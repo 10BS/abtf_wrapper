@@ -25,6 +25,6 @@ class Item(BaseModel):
 
 class ItemObjects(BaseModel):
     success: bool
-    values: Item | list[Item] = Field(
-        validation_alias=AliasChoices("item", "itemObjects")
+    item_objects: Item | list[Item] = Field(
+        validation_alias=AliasChoices("item", "itemObject", "itemObjects")
     )

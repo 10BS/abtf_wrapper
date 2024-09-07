@@ -3,10 +3,11 @@ from typing import Literal
 
 from pydantic import Field
 
-import request
 from models.item_name_sku import ItemName
 from models.item_object import ItemObjects
 from models.schema import ItemOrigins, ItemAttributes, ItemSets, SchemaProperty
+from utils import request
+from utils.check_type import CheckType
 
 
 class AutobotTF:
@@ -98,10 +99,12 @@ class AutobotTF:
 
     @staticmethod
     def get_item_object(
-        items: str | list[str],
-        bulk: bool,
+        items: str | dict | list[str | dict],
         get_from: Literal["name", "sku", "econ_item"],
     ) -> ItemObjects:
+        bulk: bool = True if isinstance(items, list) else False
+        if isinstance(items, dict) | CheckType.is_list_of_dicts(items):
+            return AutobotTF.from_econ_items(items, bulk)
         headers = {
             "accept": "*/*",
         }
@@ -109,16 +112,34 @@ class AutobotTF:
             headers["Content-Type"] = "application/json"
         method_mapping = {
             "name": "fromNameBulk" if bulk else f"fromName/{items}",
-            "sku": "fromSkuBulk" if bulk else f"fromSku/{items}",
-            "econ_item": "fromEconItem" if bulk else f"fromEconItem/{items}"
+            "sku": "fromSkuBulk" if bulk else f"fromSku/{items.replace(";", "%3B")}",
         }
         method = method_mapping.get(get_from)
         response = request.make_request(
-            method="POST",
+            method="POST" if bulk else "GET",
             base_url="https://schema.autobot.tf/",
             url=f"getItemObject/{method}",
             headers=headers,
             json=items if bulk else None,
+            output="json",
+        )
+        return ItemObjects(**response)
+
+    @staticmethod
+    def from_econ_items(
+        items: dict | list[dict],
+        bulk: bool
+    ) -> ItemObjects:
+        headers = {
+            "accept": "*/*",
+            "Content-Type": "application/json",
+        }
+        response = request.make_request(
+            method="POST",
+            base_url="https://schema.autobot.tf/getItemObject/",
+            url="fromEconItem" if not bulk else "fromEconItemBulk",
+            headers=headers,
+            json=items,
             output="json",
         )
         return ItemObjects(**response)

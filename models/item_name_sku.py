@@ -1,21 +1,11 @@
-from pydantic import BaseModel, Field
-
-
-class ItemName(BaseModel):
-    success: bool
-    name: str
+from pydantic import BaseModel, Field, AliasChoices
 
 
 class ItemNames(BaseModel):
     success: bool
-    names: list[str] = Field(alias="itemNames")
-
-
-class ItemSku(BaseModel):
-    success: bool
-    sku: str
+    names: str | list[str] = Field(validation_alias=AliasChoices("name", "itemNames"))
 
 
 class ItemSkus(BaseModel):
     success: bool
-    skus: list[str]
+    skus: str | list[str] = Field(validation_alias=AliasChoices("sku", "skus"))

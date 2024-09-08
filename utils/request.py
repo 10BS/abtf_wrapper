@@ -1,23 +1,21 @@
-from typing import Optional, Any, TypeAlias, Literal
+from typing import Optional, Literal
 
 import requests
 from pydantic import validate_call
 from requests import Response
 
-JSON: TypeAlias = Any
-
 
 @validate_call()
 def make_request(
-    method: Literal["GET", "POST"],
+    method: Literal["GET", "POST", "PATCH"],
     base_url: str,
-    headers: dict,
     url: str,
+    headers: Optional[dict] = None,
     params: Optional[dict] = None,
     data: Optional[dict | list] = None,
     json: Optional[dict | list] = None,
-    output: Literal["raw", "txt", "json"] = "raw",
-) -> Response | str | JSON:
+    output: Literal["raw", "txt", "json"] | None = "raw",
+) -> Response | str | dict:
     response: Response = requests.request(
         method=method,
         url=base_url + url,

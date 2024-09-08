@@ -1,9 +1,7 @@
 import json
 from typing import Literal
 
-from pydantic import Field
-
-from models.item_name_sku import ItemName
+from models.item_name_sku import ItemNames, ItemSkus
 from models.item_object import ItemObjects
 from models.schema import ItemOrigins, ItemAttributes, ItemSets, SchemaProperty
 from utils import request
@@ -25,6 +23,14 @@ class AutobotTF:
         )
         with open("schema.json", "w", encoding="utf-8") as schema:
             json.dump(response, schema, indent=4)
+
+    @staticmethod
+    def schema_refresh() -> None:
+        request.make_request(
+            method="PATCH",
+            base_url="https://schema.autobot.tf/",
+            url="schema/refresh"
+        )
 
     @staticmethod
     def get_origins() -> ItemOrigins:
@@ -84,18 +90,57 @@ class AutobotTF:
         return SchemaProperty(values=response)
 
     @staticmethod
-    def name_from_sku(sku: str = Field(min_length=1)) -> str:
+    def get_name(
+        items: str | dict | list[str | dict],
+        get_from: Literal["item_object", "sku"]
+    ) -> ItemNames:
+        bulk: bool = True if isinstance(items, list) else False
         headers = {
             "accept": "*/*",
         }
+        if bulk:
+            headers["Content-Type"] = "application/json"
+        method_mapping = {
+            "item_object": "fromItemObjectBulk" if bulk else f"fromItemObject",
+            "sku": "fromSkuBulk" if bulk & CheckType.is_list_of(items, str) else f"fromSku/{items.replace(";", "%3B")}",
+        }
+        method = method_mapping.get(get_from)
         response = request.make_request(
-            method="GET",
+            method="GET" if get_from == "name" and not bulk else "POST",
             base_url="https://schema.autobot.tf/",
-            url=f"getName/fromSku/{sku.replace(";", "%3B")}",
+            url=f"getSku/{method}",
             headers=headers,
+            json=items,
             output="json",
         )
-        return ItemName(**response).name
+        return ItemNames(**response)
+
+    @staticmethod
+    def get_sku(
+        items: str | dict | list[str | dict],
+        get_from: Literal["item_object", "name", "econ_item"]
+    ) -> ItemSkus:
+        bulk: bool = True if isinstance(items, list) else False
+        headers = {
+            "accept": "*/*",
+        }
+        if bulk:
+            headers["Content-Type"] = "application/json"
+        method_mapping = {
+            "item_object": "fromItemObjectBulk" if bulk else f"fromItemObject",
+            "name": "fromNameBulk" if bulk & CheckType.is_list_of(items, str) else f"fromName/{items}",
+            "econ_item": "fromEconItemBulk" if bulk & CheckType.is_list_of(items, dict) else "fromEconItem"
+        }
+        method = method_mapping.get(get_from)
+        response = request.make_request(
+            method="GET" if get_from == "sku" and not bulk else "POST",
+            base_url="https://schema.autobot.tf/",
+            url=f"getSku/{method}",
+            headers=headers,
+            json=items,
+            output="json",
+        )
+        return ItemSkus(**response)
 
     @staticmethod
     def get_item_object(
@@ -103,7 +148,7 @@ class AutobotTF:
         get_from: Literal["name", "sku", "econ_item"],
     ) -> ItemObjects:
         bulk: bool = True if isinstance(items, list) else False
-        if isinstance(items, dict) | CheckType.is_list_of_dicts(items):
+        if isinstance(items, dict) | CheckType.is_list_of(items, dict):
             return AutobotTF.from_econ_items(items, bulk)
         headers = {
             "accept": "*/*",

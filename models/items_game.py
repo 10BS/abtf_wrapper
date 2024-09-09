@@ -17,26 +17,18 @@ class Value(BaseModel):
     value: dict[str | int, dict[str | int, str | int | Rarity]]
 
 
-class GameInfo(BaseModel):
-    success: bool
-    values: dict[str, int] = Field(alias="value")
+class LogicOptions(BaseModel):
+    type: str
+    value: Optional[str, None] = None
+    player_key: Optional[str, None] = None
+    get_player: Optional[str, None] = None
+    is_owner: Optional[int, None] = None
+    team_key: Optional[str, None] = None
+    team_requirement: Optional[int, None] = None
+    distance_check_type: Optional[int, None] = None
+    distance_to_check: Optional[int, None] = None
+    key_to_lookup: Optional[str, None] = None
 
 
-class Qualities(BaseModel):
-    success: bool
-    values: dict[str, dict[str, int | str]] = Field(alias="value")
-
-
-class Rarities(BaseModel):
-    success: bool
-    values: dict[str, Rarity] = Field(alias="value")
-
-
-class EquipRegionsList(BaseModel):
-    success: bool
-    values: dict[str, int | dict[str, int]] = Field(alias="value")
-
-
-class EquipConflicts(BaseModel):
-    success: bool
-    values: dict[str, dict[str, int]] = Field(alias="value")
+class ConditionLogic(BaseModel):
+    pass

@@ -12,12 +12,7 @@ class Rarity(BaseModel):
     next_rarity: Optional[str, None]
 
 
-class Value(BaseModel):
-    success: bool
-    value: dict[str | int, dict[str | int, str | int | Rarity]]
-
-
-class LogicOptions(BaseModel):
+class ConditionLogic(BaseModel):
     type: str
     value: Optional[str, None] = None
     player_key: Optional[str, None] = None
@@ -28,7 +23,10 @@ class LogicOptions(BaseModel):
     distance_check_type: Optional[int, None] = None
     distance_to_check: Optional[int, None] = None
     key_to_lookup: Optional[str, None] = None
+    event_name: Optional[str, None] = None
+    score_key_name: Optional[str, None] = None
 
 
-class ConditionLogic(BaseModel):
-    pass
+class Value(BaseModel):
+    success: bool
+    value: dict[str | int, dict[str | int, str | int | Rarity]]

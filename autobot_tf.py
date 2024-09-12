@@ -12,7 +12,7 @@ class AutobotTF:
     @staticmethod
     def get_schema() -> None:
         headers = {
-            "accept": "*/*",
+            "accept": "*/*"
         }
         response = request.make_request(
             method="GET",
@@ -149,7 +149,7 @@ class AutobotTF:
     ) -> ItemObjects:
         bulk: bool = True if isinstance(items, list) else False
         if isinstance(items, dict) | CheckType.is_list_of(items, dict):
-            return AutobotTF.from_econ_items(items, bulk)
+            return AutobotTF.__from_econ_items(items, bulk)
         headers = {
             "accept": "*/*",
         }
@@ -171,7 +171,7 @@ class AutobotTF:
         return ItemObjects(**response)
 
     @staticmethod
-    def from_econ_items(
+    def __from_econ_items(
         items: dict | list[dict],
         bulk: bool
     ) -> ItemObjects:

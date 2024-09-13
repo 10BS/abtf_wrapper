@@ -23,6 +23,16 @@ class Item(BaseModel):
     paint: Optional[int] = None
 
 
+class ItemNames(BaseModel):
+    success: bool
+    names: str | list[str] = Field(validation_alias=AliasChoices("name", "itemNames"))
+
+
+class ItemSkus(BaseModel):
+    success: bool
+    skus: str | list[str] = Field(validation_alias=AliasChoices("sku", "skus"))
+
+
 class ItemObjects(BaseModel):
     success: bool
     item_objects: Item | list[Item] = Field(

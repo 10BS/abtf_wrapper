@@ -39,7 +39,7 @@ class AppData(BaseModel):
 
 
 class EconItem(BaseModel):
-    app_id: int = Field(default=None, alias="appid")
+    app_id: Optional[int] = Field(default=None, alias="appid")
     context_id: Optional[int] = Field(default=None, alias="contextid")
     asset_id: Optional[int] = Field(default=None, alias="assetid")
     id: Optional[int] = None

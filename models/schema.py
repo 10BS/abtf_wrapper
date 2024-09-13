@@ -1,32 +1,7 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, ClassVar
 
 from pydantic import BaseModel, Field, AliasChoices
-
-
-class ItemsGameURL(BaseModel):
-    success: bool
-    file: str = Field(alias="value")
-
-
-class ItemQualities(BaseModel):
-    success: bool
-    indexes: dict[str, int] = Field(alias="value")
-
-
-class ItemQualityNames(BaseModel):
-    success: bool
-    qualities: dict[str, str] = Field(alias="value")
-
-
-class Origin(BaseModel):
-    index: int = Field(alias="origin")
-    name: str
-
-
-class ItemOrigins(BaseModel):
-    success: bool
-    origins: list[Origin] = Field(alias="value")
 
 
 class ItemAttribute(BaseModel):
@@ -47,9 +22,9 @@ class ItemAttribute(BaseModel):
     stored_as_integer: bool
 
 
-class ItemAttributes(BaseModel):
-    success: bool
-    attributes: list[ItemAttribute] = Field(alias="value")
+class Origin(BaseModel):
+    index: int = Field(alias="origin")
+    name: str
 
 
 class Attribute(BaseModel):
@@ -65,21 +40,11 @@ class Set(BaseModel):
     attributes: Optional[list[Attribute]] = None
 
 
-class ItemSets(BaseModel):
-    success: bool
-    sets: list[Set] = Field(alias="value")
-
-
 class Particle(BaseModel):
     system: str
     id: int
     attach_to_rootbone: bool
     name: str
-
-
-class AttachedParticles(BaseModel):
-    success: bool
-    particles: list[Particle] = Field(alias="value")
 
 
 class Level(BaseModel):
@@ -93,20 +58,10 @@ class LevelName(BaseModel):
     levels: list[Level]
 
 
-class ItemLevels(BaseModel):
-    success: bool
-    level_names: list[LevelName] = Field(alias="value")
-
-
 class Counter(BaseModel):
     type: int
     type_name: str
     level_data: str
-
-
-class Counters(BaseModel):
-    success: bool
-    counters: list[Counter] = Field(alias="value")
 
 
 class String(BaseModel):
@@ -181,41 +136,34 @@ class ItemsGameItems(BaseModel):
     item_name: str
     item_type_name: str
     image_inventory: str
-    model_player: str
+    player_model: str = Field(alias="model_player")
     drop_type: str
     used_by_classes: dict[str, int]
     mouse_pressed_sound: str
     drop_sound: str
 
 
-class PaintKits(BaseModel):
-    success: bool
-    paints: dict[int, str] = Field(alias="value")
-
-
-class SchemaProperty(BaseModel):
-    values: dict[str | int, str | int] | list[str]
-
-
-class ItemGrades(BaseModel):
-    success: bool
-    items: dict[str | int, dict[str, int] | str]
-
-
 class GenericResponseModel(BaseModel):
-    success: bool
+    success: ClassVar[bool]
     values: (
         str
         | int
         | list[
-            str,
-            Origin | ItemAttribute | Set | Particle | LevelName | Counter | TableName,
+            str
+            | ItemAttribute
+            | Origin
+            | Attribute
+            | Set
+            | Particle
+            | LevelName
+            | Counter
+            | StringLookups
         ]
-        | dict[str | int, str | int | dict[str, int]]
-    ) = Field(AliasChoices("value"))
+        | dict[str | int, str | int]
+    ) = Field(validation_alias=(AliasChoices("value", "grade", "items")))
 
 
 class Item(BaseModel):
-    success: bool
+    success: ClassVar[bool]
     schema_items: SchemaItem = Field(alias="schemaItems")
     items_game_items: ItemsGameItems = Field(alias="items_gameItems")

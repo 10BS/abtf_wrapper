@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, AliasChoices, AliasPath
-from typing import Optional, Literal
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class Rarity(BaseModel):
@@ -13,7 +14,7 @@ class Rarity(BaseModel):
     next_rarity: Optional[str]
 
 
-class ConditionLogicOption(BaseModel):
+class ConditionLogic(BaseModel):
     type: str
     value: Optional[str] = None
     player_key: Optional[str] = None
@@ -26,15 +27,17 @@ class ConditionLogicOption(BaseModel):
     key_to_lookup: Optional[str] = None
 
 
-class ConditionLogic(BaseModel):
-    index: dict[int, dict[int, ConditionLogicOption]]
+class Quest(BaseModel):
+    name: str
+    condition_logic: dict[str, dict[str, ConditionLogic]]
     type: str
     event_name: Optional[str] = None
     score_key_name: Optional[str] = None
 
 
 class QuestObjectiveConditions(BaseModel):
-    pass
+    success: bool
+    value: dict[str, Quest]
 
 
 class CardType(BaseModel):

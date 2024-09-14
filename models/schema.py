@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Literal, Optional, ClassVar
 
 from pydantic import BaseModel, Field, AliasChoices
@@ -79,7 +78,7 @@ class StringLookups(BaseModel):
     table_names: list[TableName] = Field(alias="value")
 
 
-class Capabilities(BaseModel):
+class Capability(BaseModel):
     nameable: bool
     can_gift_wrap: bool
     can_craft_mark: bool
@@ -91,7 +90,7 @@ class Capabilities(BaseModel):
     can_consume: bool
 
 
-class SchemaItem(BaseModel):
+class SchemaItem(BaseModel, extra="allow"):
     name: str
     def_index: int = Field(alias="defindex")
     item_class: str
@@ -109,8 +108,8 @@ class SchemaItem(BaseModel):
     drop_type: Optional[Literal["none", "drop"]] = None
     craft_class: str
     craft_material_type: str
-    capabilities: Capabilities
-    styles: list[dict["name", str]]
+    capabilities: Capability
+    styles: list[dict[str, str]]
     used_by_classes: list[
         Literal[
             "Scout",
@@ -124,26 +123,10 @@ class SchemaItem(BaseModel):
             "Spy",
         ]
     ]
-    attributes: list[Attribute]
+    attributes: ClassVar[list[Attribute]]
 
 
-class ItemsGameItems(BaseModel):
-    name: str
-    first_sale_date: datetime
-    prefab: str
-    capabilities: dict[str, int]
-    equip_regions: dict[str, int]
-    item_name: str
-    item_type_name: str
-    image_inventory: str
-    player_model: str = Field(alias="model_player")
-    drop_type: str
-    used_by_classes: dict[str, int]
-    mouse_pressed_sound: str
-    drop_sound: str
-
-
-class GenericResponseModel(BaseModel):
+class GenericResponseModel(BaseModel, extra="allow"):
     success: ClassVar[bool]
     values: (
         str
@@ -161,9 +144,3 @@ class GenericResponseModel(BaseModel):
         ]
         | dict[str | int, str | int]
     ) = Field(validation_alias=(AliasChoices("value", "grade", "items")))
-
-
-class Item(BaseModel):
-    success: ClassVar[bool]
-    schema_items: SchemaItem = Field(alias="schemaItems")
-    items_game_items: ItemsGameItems = Field(alias="items_gameItems")

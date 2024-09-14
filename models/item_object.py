@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, AliasChoices
 
 
-class Item(BaseModel):
+class ItemObject(BaseModel):
     def_index: int = Field(alias="defindex")
     quality: int
     craftable: bool
@@ -35,6 +35,6 @@ class ItemSkus(BaseModel):
 
 class ItemObjects(BaseModel):
     success: bool
-    item_objects: Item | list[Item] = Field(
+    item_objects: ItemObject | list[ItemObject] = Field(
         validation_alias=AliasChoices("item", "itemObject", "itemObjects")
     )

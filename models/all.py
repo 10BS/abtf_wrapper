@@ -1,10 +1,19 @@
-from typing import ClassVar
-
 from pydantic import BaseModel, Field, AliasChoices
 
+from models.econ_item import EconItem
 from models.item_object import ItemObject
 from models.items_game import ItemsGameItems
-from models.schema import SchemaItem, ItemAttribute, Origin, Attribute, Set, Particle, LevelName, Counter, StringLookups
+from models.schema import (
+    SchemaItem,
+    ItemAttribute,
+    Origin,
+    Attribute,
+    Set,
+    Particle,
+    LevelName,
+    Counter,
+    StringLookups,
+)
 
 
 class ItemNames(BaseModel):
@@ -24,8 +33,12 @@ class ItemObjects(BaseModel):
     )
 
 
+class EconItems(BaseModel):
+    econ_items: list[EconItem]
+
+
 class GenericResponseModel(BaseModel):
-    success: ClassVar[bool]
+    success: bool | None = None
     values: (
         str
         | int
@@ -48,7 +61,3 @@ class Item(BaseModel):
     success: bool
     schema_items: SchemaItem = Field(alias="schemaItems")
     items_game_items: ItemsGameItems = Field(alias="items_gameItems")
-
-
-class TryItems(BaseModel):
-    items: dict[int | str, ItemsGameItems]

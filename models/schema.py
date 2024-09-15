@@ -1,14 +1,14 @@
-from typing import Literal, Optional, ClassVar
+from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, AliasChoices
+from pydantic import BaseModel, Field
 
 
 class ItemAttribute(BaseModel):
     name: str
     def_index: int = Field(alias="defindex")
-    attribute_class: Optional[str] = None
-    description_string: Optional[str] = None
-    description_format: Optional[str] = None
+    attribute_class: str | None = None
+    description_string: str | None = None
+    description_format: str | None = None
     effect_type: Literal[
         "positive",
         "negative",
@@ -36,7 +36,7 @@ class Set(BaseModel):
     item_set: str
     name: str
     items: list[str]
-    attributes: Optional[list[Attribute]] = None
+    attributes: list[Attribute] | None = None
 
 
 class Particle(BaseModel):
@@ -79,15 +79,15 @@ class StringLookups(BaseModel):
 
 
 class Capability(BaseModel):
-    nameable: bool
-    can_gift_wrap: bool
-    can_craft_mark: bool
-    can_be_restored: bool
-    strange_parts: bool
-    can_card_upgrade: bool
-    can_strangify: bool
-    can_killstreakify: bool
-    can_consume: bool
+    nameable: bool | None = None
+    can_gift_wrap: bool | None = None
+    can_craft_mark: bool | None = None
+    can_be_restored: bool | None = None
+    strange_parts: bool | None = None
+    can_card_upgrade: bool | None = None
+    can_strangify: bool | None = None
+    can_killstreakify: bool | None = None
+    can_consume: bool | None = None
 
 
 class SchemaItem(BaseModel, extra="allow"):
@@ -97,19 +97,19 @@ class SchemaItem(BaseModel, extra="allow"):
     item_type_name: str
     item_name: str
     proper_name: bool
-    item_slot: str
-    player_model: Optional[str] = Field(default=None, alias="model_player")
+    item_slot: str | None = None
+    player_model: str | None = Field(alias="model_player", default=None)
     item_quality: int
     image_inventory: str
     min_item_level: int = Field(ge=1, le=100, alias="min_ilevel")
     max_item_level: int = Field(ge=1, le=100, alias="max_ilevel")
     image_url: str
     image_url_large: str
-    drop_type: Optional[Literal["none", "drop"]] = None
+    drop_type: Literal["none", "drop"] | None = None
     craft_class: str
     craft_material_type: str
     capabilities: Capability
-    styles: list[dict[str, str]]
+    styles: list[dict[str, str]] | None = None
     used_by_classes: list[
         Literal[
             "Scout",
@@ -123,24 +123,4 @@ class SchemaItem(BaseModel, extra="allow"):
             "Spy",
         ]
     ]
-    attributes: ClassVar[list[Attribute]]
-
-
-class GenericResponseModel(BaseModel, extra="allow"):
-    success: ClassVar[bool]
-    values: (
-        str
-        | int
-        | list[
-            str
-            | ItemAttribute
-            | Origin
-            | Attribute
-            | Set
-            | Particle
-            | LevelName
-            | Counter
-            | StringLookups
-        ]
-        | dict[str | int, str | int]
-    ) = Field(validation_alias=(AliasChoices("value", "grade", "items")))
+    attributes: list[Attribute] | None = None

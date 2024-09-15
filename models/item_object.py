@@ -1,6 +1,4 @@
-from typing import Optional
-
-from pydantic import BaseModel, Field, AliasChoices
+from pydantic import BaseModel, Field
 
 
 class ItemObject(BaseModel):
@@ -10,31 +8,14 @@ class ItemObject(BaseModel):
     tradable: bool
     killstreak: int
     australium: bool
-    effect: Optional[int] = None
+    effect: int | None = None
     festive: bool
-    paint_kit: Optional[int] = Field(default=None, alias="paintkit")
-    wear: Optional[int] = None
-    quality2: Optional[int] = None
-    craft_number: Optional[int] = Field(default=None, alias="craftnumber")
-    crate_series: Optional[int] = Field(default=None, alias="crateseries")
-    target: Optional[int] = None
-    output: Optional[int] = None
-    output_quality: Optional[int] = Field(default=None, alias="outputQuality")
-    paint: Optional[int] = None
-
-
-class ItemNames(BaseModel):
-    success: bool
-    names: str | list[str] = Field(validation_alias=AliasChoices("name", "itemNames"))
-
-
-class ItemSkus(BaseModel):
-    success: bool
-    skus: str | list[str] = Field(validation_alias=AliasChoices("sku", "skus"))
-
-
-class ItemObjects(BaseModel):
-    success: bool
-    item_objects: ItemObject | list[ItemObject] = Field(
-        validation_alias=AliasChoices("item", "itemObject", "itemObjects")
-    )
+    paint_kit: int | None = Field(alias="paintkit", default=None)
+    wear: int | None = None
+    quality2: int | None = None
+    craft_number: int | None = Field(alias="craftnumber", default=None)
+    crate_series: int | None = Field(alias="crateseries", default=None)
+    target: int | None = None
+    output: int | None = None
+    output_quality: int | None = Field(alias="outputQuality", default=None)
+    paint: int | None = None

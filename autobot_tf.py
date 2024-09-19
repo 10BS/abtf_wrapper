@@ -1,16 +1,17 @@
 import json
-from typing import Literal, Optional, Any
+from typing import Any, Literal
 
 import request
-from models.item_object import ItemObjects, ItemNames, ItemSkus
-from models.schema import GenericResponseModel
+from models.all import (
+    ItemNames,
+    ItemSkus,
+    ItemObjects,
+    GenericResponseModel,
+    Item,
+)
 
 
 class AutobotTF:
-    @staticmethod
-    def __is_list_of(obj, of_: Any):
-        return isinstance(obj, list) & all(isinstance(item, of_) for item in obj)
-    
     @staticmethod
     def get_schema() -> None:
         headers = {"accept": "*/*"}
@@ -46,10 +47,8 @@ class AutobotTF:
             "items",
             "paintkits",
         ]
-    ):
-        headers = {
-            "accept": "*/*",
-        }
+    ) -> GenericResponseModel:
+        headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
@@ -72,9 +71,10 @@ class AutobotTF:
             "paints",
             "strangeParts",
             "craftWeapons",
-            "uncraftWeapons" "craftWeaponsByClass/",
+            "uncraftWeapons",
+            "craftWeaponsByClass/",
         ],
-        class_char: Optional[
+        class_char: (
             Literal[
                 "Scout",
                 "Soldier",
@@ -86,11 +86,10 @@ class AutobotTF:
                 "Sniper",
                 "Spy",
             ]
-        ] = None
+            | None
+        ) = None,
     ) -> GenericResponseModel:
-        headers = {
-            "accept": "*/*",
-        }
+        headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
             base_url="https://schema.autobot.tf/properties/",
@@ -109,9 +108,7 @@ class AutobotTF:
         items: str | dict | list[str | dict], get_from: Literal["item_object", "sku"]
     ) -> ItemNames:
         bulk: bool = True if isinstance(items, list) else False
-        headers = {
-            "accept": "*/*",
-        }
+        headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
         method_mapping = {
@@ -139,9 +136,7 @@ class AutobotTF:
         get_from: Literal["item_object", "name", "econ_item"],
     ) -> ItemSkus:
         bulk: bool = True if isinstance(items, list) else False
-        headers = {
-            "accept": "*/*",
-        }
+        headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
         method_mapping = {
@@ -176,9 +171,7 @@ class AutobotTF:
         bulk: bool = True if isinstance(items, list) else False
         if isinstance(items, dict) | AutobotTF.__is_list_of(items, dict):
             return AutobotTF.__from_econ_items(items, bulk)
-        headers = {
-            "accept": "*/*",
-        }
+        headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
         method_mapping = {
@@ -214,20 +207,14 @@ class AutobotTF:
 
     @staticmethod
     def get_item_grade(
-        by_: Optional[int | str] = None,
-        get_from: Optional[Literal["def_index", "name", "sku"]] = None,
-        get_grades: Optional[bool] = None,
-        grades_v: Optional[Literal[1, 2]] = None,
+        items: int | str | None = None,
+        get_from: Literal["def_index", "name", "sku"] | None = None,
     ) -> GenericResponseModel:
-        if get_grades:
-            return AutobotTF.__get_grades(grades_v)
-        headers = {
-            "accept": "*/*",
-        }
+        headers = {"accept": "*/*"}
         method_mapping = {
-            "def_index": f"fromDefindex/{by_}",
-            "name": f"fromName/{by_}",
-            "sku": f"fromSku/{by_}",
+            "def_index": f"fromDefindex/{items}",
+            "name": f"fromName/{items}",
+            "sku": f"fromSku/{items}",
         }
         from_ = method_mapping.get(get_from)
         response = request.make_request(
@@ -240,15 +227,52 @@ class AutobotTF:
         return GenericResponseModel(**response)
 
     @staticmethod
-    def __get_grades(v_: Literal[1, 2]) -> GenericResponseModel:
-        headers = {
-            "accept": "*/*",
-        }
+    def get_item_grades(v: Literal["v1", "v2"]) -> GenericResponseModel:
+        headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
-            url=f"getItemGrade/v{v_}",
+            url=f"getItemGrade/{v}",
             headers=headers,
             output="json",
         )
         return GenericResponseModel(**response)
+
+    @staticmethod
+    def get_item(
+        items: str | int, get_from: Literal["def_index", "name", "sku"]
+    ) -> Item:
+        headers = {"accept": "*/*"}
+        method_mapping = {
+            "def_index": f"getItem/fromDefindex/{items}",
+            "name": f"getItem/fromName/{items}",
+            "sku": f"getItem/fromSku/{items}",
+        }
+        response = request.make_request(
+            method="GET",
+            base_url="https://schema.autobot.tf/",
+            url=method_mapping.get(get_from),
+            headers=headers,
+            output="json",
+        )
+        return Item(**response)
+
+    @staticmethod
+    def __is_list_of(obj, of_: Any):
+        return isinstance(obj, list) & all(isinstance(item, of_) for item in obj)
+
+    @staticmethod
+    def __from_econ_items(items: dict | list[dict], bulk: bool) -> ItemObjects:
+        headers = {
+            "accept": "*/*",
+            "Content-Type": "application/json",
+        }
+        response = request.make_request(
+            method="POST",
+            base_url="https://schema.autobot.tf/getItemObject/",
+            url="fromEconItem" if not bulk else "fromEconItemBulk",
+            headers=headers,
+            json=items,
+            output="json",
+        )
+        return ItemObjects(**response)

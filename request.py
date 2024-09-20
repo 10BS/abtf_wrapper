@@ -1,11 +1,9 @@
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 import requests
-from pydantic import validate_call
 from requests import Response
 
 
-@validate_call()
 def make_request(
     method: Literal["GET", "POST", "PATCH"],
     base_url: str,
@@ -16,6 +14,7 @@ def make_request(
     json: Optional[dict | list] = None,
     output: Literal["raw", "txt", "json"] | None = "raw",
 ) -> Response | str | dict:
+
     response: Response = requests.request(
         method=method,
         url=base_url + url,
@@ -24,6 +23,7 @@ def make_request(
         json=json,
         headers=headers,
     )
+
     if response.ok:
         if output == "raw":
             return response

@@ -1,19 +1,21 @@
 import json
+import os
+from datetime import datetime
 from typing import Any, Literal
 
 import request
-from models.all import (
-    ItemNames,
-    ItemSkus,
-    ItemObjects,
-    GenericResponseModel,
-    Item,
-)
+from models.all import GenericResponseModel, Item, ItemNames, ItemObjects, ItemSkus
 
 
 class AutobotTF:
     @staticmethod
-    def get_schema() -> None:
+    def get_schema(
+        save_path: str,
+        filename: str | None,
+    ) -> None:
+
+        if filename is None:
+            filename = f"schema_{datetime.now().strftime("%Y%m%d_%H%M%S")}"
         headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
@@ -22,7 +24,9 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
-        with open("schema.json", "w", encoding="utf-8") as schema:
+        with open(
+            os.path.join(save_path, f"{filename}.json"), "w", encoding="utf-8"
+        ) as schema:
             json.dump(response, schema, indent=4)
 
     @staticmethod
@@ -48,6 +52,7 @@ class AutobotTF:
             "paintkits",
         ]
     ) -> GenericResponseModel:
+
         headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
@@ -56,6 +61,7 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
+
         return GenericResponseModel(**response)
 
     @staticmethod
@@ -89,6 +95,7 @@ class AutobotTF:
             | None
         ) = None,
     ) -> GenericResponseModel:
+
         headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
@@ -101,18 +108,31 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
+
         return GenericResponseModel(value=response)
 
     @staticmethod
     def get_name(
-        items: str | dict | list[str | dict], get_from: Literal["item_object", "sku"]
+        items: str | dict | list[str | dict],
+        get_from: Literal["item_object", "sku"],
+        proper: bool | None = None,
+        use_pipe_for_skin: bool | None = None,
     ) -> ItemNames:
+
         bulk: bool = True if isinstance(items, list) else False
         headers = {"accept": "*/*"}
+        params = {
+            "proper": (str(proper).lower() if proper is not None else None),
+            "usePipeForSkin": (
+                str(use_pipe_for_skin).lower()
+                if use_pipe_for_skin is not None
+                else None
+            ),
+        }
         if bulk:
             headers["Content-Type"] = "application/json"
         method_mapping = {
-            "item_object": "fromItemObjectBulk" if bulk else f"fromItemObject",
+            "item_object": "fromItemObjectBulk" if bulk else "fromItemObject",
             "sku": (
                 "fromSkuBulk"
                 if bulk & AutobotTF.__is_list_of(items, str)
@@ -121,13 +141,16 @@ class AutobotTF:
         }
         from_ = method_mapping.get(get_from)
         response = request.make_request(
-            method="GET" if get_from == "name" and not bulk else "POST",
+            method="GET" if get_from == "sku" and not bulk else "POST",
             base_url="https://schema.autobot.tf/",
-            url=f"getSku/{from_}",
+            url=f"getName/{from_}",
+            params=params,
             headers=headers,
-            json=items,
+            json=items if get_from != "sku" else None,
+            data=items if get_from == "sku" else None,
             output="json",
         )
+
         return ItemNames(**response)
 
     @staticmethod
@@ -135,12 +158,13 @@ class AutobotTF:
         items: str | dict | list[str | dict],
         get_from: Literal["item_object", "name", "econ_item"],
     ) -> ItemSkus:
+
         bulk: bool = True if isinstance(items, list) else False
         headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
         method_mapping = {
-            "item_object": "fromItemObjectBulk" if bulk else f"fromItemObject",
+            "item_object": "fromItemObjectBulk" if bulk else "fromItemObject",
             "name": (
                 "fromNameBulk"
                 if bulk & AutobotTF.__is_list_of(items, str)
@@ -161,19 +185,42 @@ class AutobotTF:
             json=items,
             output="json",
         )
+
         return ItemSkus(**response)
 
     @staticmethod
     def get_item_object(
         items: str | dict | list[str | dict],
         get_from: Literal["name", "sku", "econ_item"],
+        normalize_festivized_items: bool | None = None,
+        normalize_strange_2nd_quality: bool | None = None,
+        normalize_painted: bool | None = None,
     ) -> ItemObjects:
+
         bulk: bool = True if isinstance(items, list) else False
         if isinstance(items, dict) | AutobotTF.__is_list_of(items, dict):
             return AutobotTF.__from_econ_items(items, bulk)
         headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
+
+        params = {
+            "normalizeFestivizedItems": (
+                str(normalize_festivized_items).lower()
+                if normalize_festivized_items is not None
+                else None
+            ),
+            "normalizeStrangeAsSecondQuality": (
+                str(normalize_strange_2nd_quality).lower()
+                if normalize_strange_2nd_quality is not None
+                else None
+            ),
+            "normalizedPainted": (
+                str(normalize_painted).lower()
+                if normalize_painted is not None
+                else None
+            ),
+        }
         method_mapping = {
             "name": "fromNameBulk" if bulk else f"fromName/{items}",
             "sku": "fromSkuBulk" if bulk else f"fromSku/{items.replace(";", "%3B")}",
@@ -183,26 +230,12 @@ class AutobotTF:
             method="POST" if bulk else "GET",
             base_url="https://schema.autobot.tf/",
             url=f"getItemObject/{from_}",
+            params=params,
             headers=headers,
             json=items if bulk else None,
             output="json",
         )
-        return ItemObjects(**response)
 
-    @staticmethod
-    def __from_econ_items(items: dict | list[dict], bulk: bool) -> ItemObjects:
-        headers = {
-            "accept": "*/*",
-            "Content-Type": "application/json",
-        }
-        response = request.make_request(
-            method="POST",
-            base_url="https://schema.autobot.tf/getItemObject/",
-            url="fromEconItem" if not bulk else "fromEconItemBulk",
-            headers=headers,
-            json=items,
-            output="json",
-        )
         return ItemObjects(**response)
 
     @staticmethod
@@ -210,6 +243,7 @@ class AutobotTF:
         items: int | str | None = None,
         get_from: Literal["def_index", "name", "sku"] | None = None,
     ) -> GenericResponseModel:
+
         headers = {"accept": "*/*"}
         method_mapping = {
             "def_index": f"fromDefindex/{items}",
@@ -224,10 +258,12 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
+
         return GenericResponseModel(**response)
 
     @staticmethod
     def get_item_grades(v: Literal["v1", "v2"]) -> GenericResponseModel:
+
         headers = {"accept": "*/*"}
         response = request.make_request(
             method="GET",
@@ -236,12 +272,14 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
+
         return GenericResponseModel(**response)
 
     @staticmethod
     def get_item(
         items: str | int, get_from: Literal["def_index", "name", "sku"]
     ) -> Item:
+
         headers = {"accept": "*/*"}
         method_mapping = {
             "def_index": f"getItem/fromDefindex/{items}",
@@ -255,6 +293,7 @@ class AutobotTF:
             headers=headers,
             output="json",
         )
+
         return Item(**response)
 
     @staticmethod
@@ -263,6 +302,7 @@ class AutobotTF:
 
     @staticmethod
     def __from_econ_items(items: dict | list[dict], bulk: bool) -> ItemObjects:
+
         headers = {
             "accept": "*/*",
             "Content-Type": "application/json",
@@ -275,4 +315,5 @@ class AutobotTF:
             json=items,
             output="json",
         )
+
         return ItemObjects(**response)

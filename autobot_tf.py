@@ -1,13 +1,16 @@
 import json
 import os
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
-import request
+from requests import Response
+
+import AutobotTF
 from models.all import GenericResponseModel, Item, ItemNames, ItemObjects, ItemSkus
 
 
 class AutobotTF:
+
     @staticmethod
     def get_schema(
         save_path: str,
@@ -17,7 +20,7 @@ class AutobotTF:
         if filename is None:
             filename = f"schema_{datetime.now().strftime("%Y%m%d_%H%M%S")}"
         headers = {"accept": "*/*"}
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
             url="schema/download",
@@ -31,7 +34,7 @@ class AutobotTF:
 
     @staticmethod
     def schema_refresh() -> None:
-        request.make_request(
+        AutobotTF.__make_request(
             method="PATCH", base_url="https://schema.autobot.tf/", url="schema/refresh"
         )
 
@@ -54,7 +57,7 @@ class AutobotTF:
     ) -> GenericResponseModel:
 
         headers = {"accept": "*/*"}
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
             url=f"raw/schema/{key}",
@@ -97,7 +100,7 @@ class AutobotTF:
     ) -> GenericResponseModel:
 
         headers = {"accept": "*/*"}
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/properties/",
             url=(
@@ -140,7 +143,7 @@ class AutobotTF:
             ),
         }
         from_ = method_mapping.get(get_from)
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET" if get_from == "sku" and not bulk else "POST",
             base_url="https://schema.autobot.tf/",
             url=f"getName/{from_}",
@@ -177,7 +180,7 @@ class AutobotTF:
             ),
         }
         from_ = method_mapping.get(get_from)
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET" if get_from == "sku" and not bulk else "POST",
             base_url="https://schema.autobot.tf/",
             url=f"getSku/{from_}",
@@ -226,7 +229,7 @@ class AutobotTF:
             "sku": "fromSkuBulk" if bulk else f"fromSku/{items.replace(";", "%3B")}",
         }
         from_ = method_mapping.get(get_from)
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="POST" if bulk else "GET",
             base_url="https://schema.autobot.tf/",
             url=f"getItemObject/{from_}",
@@ -251,7 +254,7 @@ class AutobotTF:
             "sku": f"fromSku/{items}",
         }
         from_ = method_mapping.get(get_from)
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
             url=f"getItemGrade/{from_}",
@@ -265,7 +268,7 @@ class AutobotTF:
     def get_item_grades(v: Literal["v1", "v2"]) -> GenericResponseModel:
 
         headers = {"accept": "*/*"}
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
             url=f"getItemGrade/{v}",
@@ -286,7 +289,7 @@ class AutobotTF:
             "name": f"getItem/fromName/{items}",
             "sku": f"getItem/fromSku/{items}",
         }
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="GET",
             base_url="https://schema.autobot.tf/",
             url=method_mapping.get(get_from),
@@ -295,6 +298,37 @@ class AutobotTF:
         )
 
         return Item(**response)
+
+    @staticmethod
+    def __make_request(
+            method: Literal["GET", "POST", "PATCH"],
+            base_url: str,
+            url: str,
+            headers: Optional[dict] = None,
+            params: Optional[dict] = None,
+            data: dict | list | None = None,
+            json: dict | list | None = None,
+            output: Literal["raw", "txt", "json"] | None = "raw",
+    ) -> Response | str | dict:
+
+        response: Response = requests.request(
+            method=method,
+            url=base_url + url,
+            params=params,
+            data=data,
+            json=json,
+            headers=headers,
+        )
+
+        if response.ok:
+            if output == "raw":
+                return response
+            elif output == "txt":
+                return response.text
+            elif output == "json":
+                return response.json()
+        else:
+            print(response.raise_for_status())
 
     @staticmethod
     def __is_list_of(obj, of_: Any):
@@ -307,7 +341,7 @@ class AutobotTF:
             "accept": "*/*",
             "Content-Type": "application/json",
         }
-        response = request.make_request(
+        response = AutobotTF.__make_request(
             method="POST",
             base_url="https://schema.autobot.tf/getItemObject/",
             url="fromEconItem" if not bulk else "fromEconItemBulk",

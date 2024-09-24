@@ -90,7 +90,7 @@ class Capability(BaseModel):
     can_consume: bool | None = None
 
 
-class SchemaItem(BaseModel, extra="allow"):
+class SchemaItem(BaseModel):
     name: str
     def_index: int = Field(alias="defindex")
     item_class: str

@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class Rarity(BaseModel, extra="allow"):
+class Rarity(BaseModel):
     value: int
     loc_key: str
     loc_key_weapon: str
@@ -13,7 +13,7 @@ class Rarity(BaseModel, extra="allow"):
     next_rarity: str | None = None
 
 
-class ConditionLogic(BaseModel, extra="allow"):
+class ConditionLogic(BaseModel):
     type: str
     value: str | None = None
     player_key: str | None = None
@@ -26,7 +26,7 @@ class ConditionLogic(BaseModel, extra="allow"):
     key_to_lookup: str | None = None
 
 
-class Quest(BaseModel, extra="allow"):
+class Quest(BaseModel):
     name: str
     condition_logic: dict[str, dict[str, ConditionLogic]]
     type: str
@@ -52,7 +52,7 @@ class ItemCollection(BaseModel):
     items: dict[str, int | dict[str, int]]
 
 
-class Operation(BaseModel, extra="allow"):
+class Operation(BaseModel):
     name: str
     operation_start_date: datetime
     stop_adding_to_queue_date: datetime
@@ -64,7 +64,7 @@ class Operation(BaseModel, extra="allow"):
     uses_credits: int | None = None
 
 
-class CapabilityExt(BaseModel, extra="allow"):
+class CapabilityExt(BaseModel):
     can_craft_count: bool | None = None
     paintable: bool | None = None
 
@@ -75,13 +75,13 @@ class Tool(BaseModel):
     restriction: str
 
 
-class Tag(BaseModel, extra="allow"):
+class Tag(BaseModel):
     can_deal_damage: bool | None = None
     can_deal_mvm_penetration_damage: bool | None = None
     can_deal_long_distance_damage: bool | None = None
 
 
-class PlayerBodyGroup(BaseModel, extra="allow"):
+class PlayerBodyGroup(BaseModel):
     hat: bool | None = None
     head: bool | None = None
     headphones: bool | None = None
@@ -92,7 +92,7 @@ class PlayerBodyGroup(BaseModel, extra="allow"):
     shoes_socks: bool | None = None
 
 
-class AdditionalHiddenBodyGroup(BaseModel, extra="allow"):
+class AdditionalHiddenBodyGroup(BaseModel):
     hat: bool | None = None
     head: bool | None = None
     headphones: bool | None = None
@@ -100,7 +100,7 @@ class AdditionalHiddenBodyGroup(BaseModel, extra="allow"):
     dog_tags: bool | None = Field(alias="dogtags", default=None)
 
 
-class Style(BaseModel, extra="allow"):
+class Style(BaseModel):
     name: str | None = None
     player_model: str | None = Field(default=None, alias="model_player")
     additional_hidden_body_groups: AdditionalHiddenBodyGroup = Field(
@@ -113,7 +113,7 @@ class Style(BaseModel, extra="allow"):
     skin_blu: bool | None = None
 
 
-class Visuals(BaseModel, extra="allow"):
+class Visuals(BaseModel):
     player_body_groups: PlayerBodyGroup | None = Field(
         alias="player_bodygroups", default=None
     )
@@ -124,7 +124,7 @@ class Visuals(BaseModel, extra="allow"):
     sound_deploy: str | None = None
 
 
-class StaticAttr(BaseModel, extra="allow"):
+class StaticAttr(BaseModel):
     set_supply_crate_series: int | None = Field(
         alias="set supply crate series", default=None
     )
@@ -180,7 +180,7 @@ class StaticAttr(BaseModel, extra="allow"):
     tool_target_item: int | None = Field(alias="tool target item", default=None)
 
 
-class ItemsGameItems(BaseModel, extra="allow"):
+class ItemsGameItems(BaseModel):
     name: str
     first_sale_date: str | None = None
     prefab: str | None = None

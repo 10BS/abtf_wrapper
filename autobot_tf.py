@@ -37,7 +37,9 @@ class AutobotTF:
     @staticmethod
     def schema_refresh() -> None:
         AutobotTF.__make_request(
-            method="PATCH", base_url="https://schema.autobot.tf/", url="schema/refresh"
+            method="PATCH",
+            base_url="https://schema.autobot.tf/",
+            url="schema/refresh"
         )
 
     @staticmethod

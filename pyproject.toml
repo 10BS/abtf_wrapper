@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "schema-abtf-wrapper"
-version = "0.0.1"
+version = "1.0.0"
 description = ""
-authors = ["Reue Munz <you@example.com>"]
+authors = ["Reue Munz <reue5118@protonmail.com>"]
 license = "MIT"
-readme = "README.md"
+readme = "readme.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+pydantic = "^2.9.2"
 requests = "^2.32.3"
-pydantic = "^2.9.1"
 
 [tool.isort]
 profile = "black"

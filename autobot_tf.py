@@ -6,7 +6,7 @@ from typing import Any, Literal, Optional
 import requests
 from requests import Response
 
-from models.all import GenericResponseModel, Item, ItemNames, ItemObjects, ItemSkus
+from models.main_models import GenericResponseModel, Item, ItemNames, ItemObjects, ItemSkus
 
 BASE_URL: str = "https://schema.autobot.tf/"
 
@@ -164,30 +164,35 @@ class AutobotTF:
     def get_sku(
         items: str | dict | list[str | dict],
         get_from: Literal["item_object", "name", "econ_item"],
+        bulk: bool = False
     ) -> ItemSkus:
 
-        bulk: bool = True if isinstance(items, list) else False
+        global method
+
         headers = {"accept": "*/*"}
         if bulk:
             headers["Content-Type"] = "application/json"
-        method_mapping = {
-            "item_object": "fromItemObjectBulk" if bulk else "fromItemObject",
-            "name": (
-                "fromNameBulk"
-                if bulk & AutobotTF.__is_list_of_type(items, str)
-                else f"fromName/{items}"
-            ),
-            "econ_item": (
-                "fromEconItemBulk"
-                if bulk & AutobotTF.__is_list_of_type(items, dict)
-                else "fromEconItem"
-            ),
-        }
-        from_ = method_mapping.get(get_from)
+
+        match (get_from, bulk):
+            case "fromItemObject", False:
+                method = "fromItemObject"
+            case "fromItemObject", True:
+                method = "fromItemObjectBulk"
+
+            case "name", False:
+                method = f"fromName/{items}"
+            case "name", True:
+                method = "fromNameBulk"
+
+            case "econ_item", False:
+                method = "fromEconItem"
+            case "econ_item", True:
+                method = "fromEconItemBulk"
+
         response = AutobotTF.__make_request(
-            method="GET" if get_from == "sku" and not bulk else "POST",
+            method="GET" if get_from == "name" and not bulk else "POST",
             base_url=BASE_URL,
-            url=f"getSku/{from_}",
+            url=f"getSku/{method}",
             headers=headers,
             json=items,
             output="json",
@@ -313,7 +318,7 @@ class AutobotTF:
         data: dict | list | None = None,
         json: dict | list | None = None,
         output: Literal["raw", "txt", "json"] | None = "raw",
-    ) -> Response | str | dict:
+    ) -> Response | None | Any:
 
         try:
             response: Response = requests.request(
